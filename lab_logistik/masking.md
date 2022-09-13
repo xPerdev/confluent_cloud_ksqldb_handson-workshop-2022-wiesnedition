@@ -1,150 +1,156 @@
 # Retail and Logistic case: Maskink PII Data (steps for Confluent Cloud)
 
+
 We are going to build data pipeline which should look like this:
 ![Retail Use cases as flow](img/Mask1.png)
 
 ## 1. First Steps
 Login to Confluent Cloud. Select environment "ksqldb-workshop" and then select your Cluster. From the left panel select "ksqlDB" to display all apps. Select your ksqlDB cluster to display the ksqlDB Editor. 
 
-![Start Screen](img/payments_start.png)
+![Start Screen](img/Mask2.png)
+
+
+
+## 2. Create Streams 
+
+Suppose you have a topic that contains personally identifiable information (PII), and you want to mask those fields. In this tutorial, we'll write a program that persists the events in the original topic to a new Kafka topic with the PII removed or obfuscated.
+
+First, you’ll need to create a Kafka topic and stream to represent the purchases data. The following creates both in one shot.
 
 Enter following commands (click button "Run query" for each command):
-```
-show topics;
-show streams;
-```
-Check the properties set for ksqlDB.
-```
-show properties;
-```
-## 2. Create Streams and Table
-```
-create stream payments(PAYMENT_ID INTEGER KEY, CUSTID INTEGER, ACCOUNTID INTEGER, AMOUNT INTEGER, BANK VARCHAR) with(kafka_topic='Payment_Instruction', value_format='json');
-```
-Check your creation with describe and select. You can also use Confluent Control Center for this inspection.
-```
-describe payments;
-```
-Create the other streams
-```
-create stream aml_status(PAYMENT_ID INTEGER, BANK VARCHAR, STATUS VARCHAR) with(kafka_topic='AML_Status', value_format='json');
 
-create stream funds_status (PAYMENT_ID INTEGER, REASON_CODE VARCHAR, STATUS VARCHAR) with(kafka_topic='Funds_Status', value_format='json');
-
-list streams;
-
-create table customers (
-          ID INTEGER PRIMARY KEY, 
-          FIRST_NAME VARCHAR, 
-          LAST_NAME VARCHAR, 
-          EMAIL VARCHAR, 
-          GENDER VARCHAR, 
-          STATUS360 VARCHAR) 
-          WITH(kafka_topic='CUSTOMERS_FLAT', value_format='JSON');
-
-list tables;        
 ```
-## 3. Load Data to Streams and Table
+CREATE STREAM purchases (order_id INT, customer_name VARCHAR, date_of_birth VARCHAR,
+                         product VARCHAR, order_total_usd DOUBLE, town VARCHAR, country VARCHAR)
+    WITH (kafka_topic='purchases', value_format='json', partitions=1);
+```
+
+
+## 3. Insert Data to Streams
+
 In the ksqlDB Editor add some data to your streams.
 
-Customer Data:
+purchase data using the following commands:
 ```
-INSERT INTO customers (id, FIRST_NAME, LAST_NAME, EMAIL, GENDER, STATUS360) values (10,'Brena','Tollerton','btollerton9@furl.net','Female','silver');
-INSERT INTO customers (id, FIRST_NAME, LAST_NAME, EMAIL, GENDER, STATUS360) values (9,'Even','Tinham','etinham8@facebook.com','Male','silver');
-INSERT INTO customers (id, FIRST_NAME, LAST_NAME, EMAIL, GENDER, STATUS360) values (8,'Patti','Rosten','prosten7@ihg.com','Female','silver');
-INSERT INTO customers (id, FIRST_NAME, LAST_NAME, EMAIL, GENDER, STATUS360) values (7,'Fay','Huc','fhuc6@quantcast.com','Female','bronze');
-INSERT INTO customers (id, FIRST_NAME, LAST_NAME, EMAIL, GENDER, STATUS360) values (6,'Robinet','Leheude','rleheude5@reddit.com','Female','platinum');
-INSERT INTO customers (id, FIRST_NAME, LAST_NAME, EMAIL, GENDER, STATUS360) values (5,'Hansiain','Coda','hcoda4@senate.gov','Male','platinum');
-INSERT INTO customers (id, FIRST_NAME, LAST_NAME, EMAIL, GENDER, STATUS360) values (4,'Hashim','Rumke','hrumke3@sohu.com','Male','platinum');
-INSERT INTO customers (id, FIRST_NAME, LAST_NAME, EMAIL, GENDER, STATUS360) values (3,'Mariejeanne','Cocci','mcocci2@techcrunch.com','Female','bronze');
-INSERT INTO customers (id, FIRST_NAME, LAST_NAME, EMAIL, GENDER, STATUS360) values (2,'Ruthie','Brockherst','rbrockherst1@ow.ly','Female','platinum');
-INSERT INTO customers (id, FIRST_NAME, LAST_NAME, EMAIL, GENDER, STATUS360) values (1,'Rica','Blaisdell','rblaisdell0@rambler.ru','Female','bronze');
+INSERT INTO purchases (order_id, customer_name, date_of_birth, product, order_total_usd, town, country) VALUES (1, 'Britney', '02/29/2000', 'Heart Rate Monitor', 119.93, 'Denver', 'USA');
+INSERT INTO purchases (order_id, customer_name, date_of_birth, product, order_total_usd, town, country) VALUES (2, 'Michael', '06/08/1981', 'Foam Roller', 34.95, 'Los Angeles', 'USA');
+INSERT INTO purchases (order_id, customer_name, date_of_birth, product, order_total_usd, town, country) VALUES (3, 'Kimmy', '05/19/1978', 'Hydration Belt', 50.00, 'Tuscan', 'USA');
+INSERT INTO purchases (order_id, customer_name, date_of_birth, product, order_total_usd, town, country) VALUES (4, 'Samantha', '08/05/1983', 'Wireless Headphones', 175.93, 'Tulsa', 'USA');
+INSERT INTO purchases (order_id, customer_name, date_of_birth, product, order_total_usd, town, country) VALUES (5, 'Jonathon', '01/31/1981', 'Comfort Insoles', 49.95, 'Portland', 'USA');
+INSERT INTO purchases (order_id, customer_name, date_of_birth, product, order_total_usd, town, country) VALUES (6, 'Raymond', '07/29/2001', 'Running Beanie', 13.73, 'Omaha', 'USA');
 ```
-Payment Instruction Data
-```
-insert into payments (PAYMENT_ID, CUSTID, ACCOUNTID, AMOUNT, BANK) values (1,1,1234000,100,'DBS');
-insert into payments (PAYMENT_ID, CUSTID, ACCOUNTID, AMOUNT, BANK) values (3,2,1234100,200,'Barclays Bank');
-insert into payments (PAYMENT_ID, CUSTID, ACCOUNTID, AMOUNT, BANK) values (5,3,1234200,300,'BNP Paribas');
-insert into payments (PAYMENT_ID, CUSTID, ACCOUNTID, AMOUNT, BANK) values (7,4,1234300,400,'Wells Fargo');
-insert into payments (PAYMENT_ID, CUSTID, ACCOUNTID, AMOUNT, BANK) values (9,5,1234400,500,'DBS');
-insert into payments (PAYMENT_ID, CUSTID, ACCOUNTID, AMOUNT, BANK) values (11,6,1234500,600,'Royal Bank of Canada');
-insert into payments (PAYMENT_ID, CUSTID, ACCOUNTID, AMOUNT, BANK) values (13,7,1234600,700,'DBS');
-insert into payments (PAYMENT_ID, CUSTID, ACCOUNTID, AMOUNT, BANK) values (15,8,1234700,800,'DBS');
-insert into payments (PAYMENT_ID, CUSTID, ACCOUNTID, AMOUNT, BANK) values (17,9,1234800,900,'DBS');
-insert into payments (PAYMENT_ID, CUSTID, ACCOUNTID, AMOUNT, BANK) values (19,10,1234900,1000,'United Overseas Bank');
-```
-ALM Status Data
-```
-insert into aml_status(PAYMENT_ID,BANK,STATUS) values (1,'Wells Fargo','OK');
-insert into aml_status(PAYMENT_ID,BANK,STATUS) values (3,'Commonwealth Bank of Australia','OK');
-insert into aml_status(PAYMENT_ID,BANK,STATUS) values (5,'Deutsche Bank','OK');
-insert into aml_status(PAYMENT_ID,BANK,STATUS) values (7,'DBS','OK');
-insert into aml_status(PAYMENT_ID,BANK,STATUS) values (9,'United Overseas Bank','OK');
-insert into aml_status(PAYMENT_ID,BANK,STATUS) values (11,'Citi','OK');
-insert into aml_status(PAYMENT_ID,BANK,STATUS) values (13,'Commonwealth Bank of Australia','OK');
-insert into aml_status(PAYMENT_ID,BANK,STATUS) values (15,'Barclays Bank','OK');
-insert into aml_status(PAYMENT_ID,BANK,STATUS) values (17,'United Overseas Bank','OK');
-insert into aml_status(PAYMENT_ID,BANK,STATUS) values (19,'Royal Bank of Canada','OK');
-```
-Funds Status Data
-```
-insert into funds_status(PAYMENT_ID,REASON_CODE,STATUS) values (1,'00','OK');
-insert into funds_status(PAYMENT_ID,REASON_CODE,STATUS) values (3,'99','OK');
-insert into funds_status(PAYMENT_ID,REASON_CODE,STATUS) values (5,'30','OK');
-insert into funds_status(PAYMENT_ID,REASON_CODE,STATUS) values (7,'00','OK');
-insert into funds_status(PAYMENT_ID,REASON_CODE,STATUS) values (9,'00','OK');
-insert into funds_status(PAYMENT_ID,REASON_CODE,STATUS) values (11,'00','NOT OK');
-insert into funds_status(PAYMENT_ID,REASON_CODE,STATUS) values (13,'30','OK');
-insert into funds_status(PAYMENT_ID,REASON_CODE,STATUS) values (15,'00','OK');
-insert into funds_status(PAYMENT_ID,REASON_CODE,STATUS) values (17,'10','OK');
-insert into funds_status(PAYMENT_ID,REASON_CODE,STATUS) values (19,'10','OK');
-```
+
+
 ## 4. Verify the entered data
 
 Please set the following query properties 
 * 'auto.offset.reset' to 'earliest'
-* 'commit.interval.ms' to '1000'
 to query your streams and table
 
-![Needed Properties](img/payments_properties.png)
+![Needed Properties](img/Mask3.png)
+
+
+
+Now we should be able to see all of the purchases data we just entered with the following command:
+
+
+
+```
+SELECT *
+    FROM purchases
+    EMIT CHANGES
+    LIMIT 6;
+```
+This should yield roughly the following output. The order will be different depending on how the records were actually inserted. Note that PII like name, birthdate, city, and country are present.
 
 ```bash
-select * from customers emit changes;
-
-select * from customers where id=1 emit changes;
-
-select * from payments emit changes;
-
-select * from aml_status emit changes;
-
-select * from funds_status emit changes;
++--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+
+|ORDER_ID            |CUSTOMER_NAME       |DATE_OF_BIRTH       |PRODUCT             |ORDER_TOTAL_USD     |TOWN                |COUNTRY             |
++--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+
+|1                   |Britney             |02/29/2000          |Heart Rate Monitor  |119.93              |Denver              |USA                 |
+|2                   |Michael             |06/08/1981          |Foam Roller         |34.95               |Los Angeles         |USA                 |
+|3                   |Kimmy               |05/19/1978          |Hydration Belt      |50.0                |Tuscan              |USA                 |
+|4                   |Samantha            |08/05/1983          |Wireless Headphones |175.93              |Tulsa               |USA                 |
+|5                   |Jonathon            |01/31/1981          |Comfort Insoles     |49.95               |Portland            |USA                 |
+|6                   |Raymond             |07/29/2001          |Running Beanie      |13.73               |Omaha               |USA                 |
+Limit Reached
+Query terminated
 ```
-What is the pull query here? The answer is no one.
-What to do to make a pull query possible.
-```bash
-CREATE TABLE QUERYABLE_CUSTOMERS AS SELECT * FROM CUSTOMERS;
-select * from QUERYABLE_CUSTOMERS emit changes;
-# here is the pull query now
-select * from QUERYABLE_CUSTOMERS where id = 1;
-```
-## 5. Enrich Payments stream with Customers table
-```
-create stream enriched_payments as select
-p.payment_id as payment_id,
-p.custid as customer_id,
-p.accountid,
-p.amount,
-p.bank,
-c.first_name,
-c.last_name,
-c.email,
-c.status360
-from payments p left join customers c on p.custid = c.id;
 
-describe ENRICHED_PAYMENTS;
+## 5. Handle PII Data
 
-select * from enriched_payments emit changes;
+Next we will highlight two ways to mask PII data, both methods will result in new streams.
+Our first masking technique will be to create a derived topic in which all PII is excluded. This technique masks data by refraining from pulling in PII fields like CUSTOMER_NAME and DATE_OF_BIRTH.
+
+
 ```
+CREATE STREAM purchases_pii_removed
+    WITH (kafka_topic='purchases_pii_removed', value_format='json', partitions=1) AS
+    SELECT ORDER_ID, PRODUCT, ORDER_TOTAL_USD, TOWN, COUNTRY
+    FROM PURCHASES;
+```
+Let’s verify that the derived topic we just created does not have any PII related to CUSTOMER_NAME or DATE_OF_BIRTH. You can see the contents of the stream by executing the following:
+
+```
+SELECT *
+    FROM purchases_pii_removed
+    EMIT CHANGES
+    LIMIT 6;
+```
+
+Your results should look like what is below. Take note of the lack of PII fields like CUSTOMER_NAME or DATE_OF_BIRTH.
+
+```
++--------------------+--------------------+--------------------+--------------------+--------------------+
+|ORDER_ID            |PRODUCT             |ORDER_TOTAL_USD     |TOWN                |COUNTRY             |
++--------------------+--------------------+--------------------+--------------------+--------------------+
+|1                   |Heart Rate Monitor  |119.93              |Denver              |USA                 |
+|2                   |Foam Roller         |34.95               |Los Angeles         |USA                 |
+|3                   |Hydration Belt      |50.0                |Tuscan              |USA                 |
+|4                   |Wireless Headphones |175.93              |Tulsa               |USA                 |
+|5                   |Comfort Insoles     |49.95               |Portland            |USA                 |
+|6                   |Running Beanie      |13.73               |Omaha               |USA                 |
+Limit Reached
+Query terminated
+```
+The second technique for masking data utilizes ksqlDB’s built in MASK functions. Here we retain the customer name and date of birth, but obfuscated.
+
+```
+CREATE STREAM purchases_pii_obfuscated
+    WITH (kafka_topic='purchases_pii_obfuscated', value_format='json', partitions=1) AS
+    SELECT MASK(CUSTOMER_NAME) AS CUSTOMER_NAME,
+           MASK(DATE_OF_BIRTH) AS DATE_OF_BIRTH,
+           ORDER_ID, PRODUCT, ORDER_TOTAL_USD, TOWN, COUNTRY
+    FROM PURCHASES;
+```
+
+Use the command below to query the contents of the purchases_pii_obfuscated stream:
+
+```
+SELECT *
+    FROM purchases_pii_obfuscated
+    EMIT CHANGES
+    LIMIT 6;
+```
+
+We can see that the sensitive data is masked with x’s or n’s.
+
+```
+
++--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+
+|CUSTOMER_NAME       |DATE_OF_BIRTH       |ORDER_ID            |PRODUCT             |ORDER_TOTAL_USD     |TOWN                |COUNTRY             |
++--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+--------------------+
+|Xxxxxxx             |nn-nn-nnnn          |1                   |Heart Rate Monitor  |119.93              |Denver              |USA                 |
+|Xxxxxxx             |nn-nn-nnnn          |2                   |Foam Roller         |34.95               |Los Angeles         |USA                 |
+|Xxxxx               |nn-nn-nnnn          |3                   |Hydration Belt      |50.0                |Tuscan              |USA                 |
+|Xxxxxxxx            |nn-nn-nnnn          |4                   |Wireless Headphones |175.93              |Tulsa               |USA                 |
+|Xxxxxxxx            |nn-nn-nnnn          |5                   |Comfort Insoles     |49.95               |Portland            |USA                 |
+|Xxxxxxx             |nn-nn-nnnn          |6                   |Running Beanie      |13.73               |Omaha               |USA                 |
+Limit Reached
+Query terminated
+```
+
+
 Now check in Confluent Cloud UI:
 * check in ksqlDB Cluster - the persistent queries. Take a look in the details (SINK: and SOURCE:) of the running queries.
 * check performance tab if everything running without problems
