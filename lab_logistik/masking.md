@@ -1,7 +1,7 @@
 # Retail and Logistic case: Maskink PII Data (steps for Confluent Cloud)
 
 We are going to build data pipeline which should look like this:
-![Retail Use cases as flow](img/mask1.png)
+![Retail Use cases as flow](img/Mask1.png)
 
 ## 1. First Steps
 Login to Confluent Cloud. Select environment "ksqldb-workshop" and then select your Cluster. From the left panel select "ksqlDB" to display all apps. Select your ksqlDB cluster to display the ksqlDB Editor. 
