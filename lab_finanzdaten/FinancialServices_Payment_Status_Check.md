@@ -1,38 +1,63 @@
 # Financial services case: Payment Status check (steps for Confluent Cloud)
 
-We are going to build data pipeline which should look like this:
+- We are going to build data pipeline which should look like this:
 ![Financial Services Use cases as flow](img/financial_datapipeline.png)
 
 ## 1. First Steps
-Login to Confluent Cloud. Select environment "ksqldb-workshop" and then select your Cluster. From the left panel select "ksqlDB" to display all apps. Select your ksqlDB cluster to display the ksqlDB Editor. 
+- Login to Confluent Cloud. 
+- Select environment "ksqldb-workshop" and then select your Cluster. 
+- From the left panel select "ksqlDB" to display all apps. 
+- Select your ksqlDB cluster to display the ksqlDB Editor. 
 
 ![Start Screen](img/payments_start.png)
 
-Enter following commands (click button "Run query" for each command):
-```
-show topics;
-show streams;
-```
 Check the properties set for ksqlDB.
 ```
 show properties;
 ```
+
+## 2. Create Topics
+
+- Click the **Topics** in the navigation menu. The Topics page appears.
+- If there aren’t any topics created yet, click **Create topic**. Otherwise, click **Add a topic**.
+
+![Topics_Page](img/topics_page.png)
+
+- Specify your topic details and click **Create with defaults**.
+- Create the following topics: 
+  1. Topic name: ```Payment_Instruction``` , Partitions: 1
+
+     ![Create_Topic](img/create_topic.png)
+  2. Topic name: ```AML_Status```, Partitions: 1
+  3. Topic name: ```Funds_Status```, Partitions: 1
+  4. Topic name: ```CUSTOMERS_FLAT```, Partitions: 1
+
+- Go to **ksqlDB** from the navigation menu and verify the created topics with the following command:
+```
+show topics;
+```
+
 ## 2. Create Streams and Table
 ```
 create stream payments(PAYMENT_ID INTEGER KEY, CUSTID INTEGER, ACCOUNTID INTEGER, AMOUNT INTEGER, BANK VARCHAR) with(kafka_topic='Payment_Instruction', value_format='json');
 ```
-Check your creation with describe and select. You can also use Confluent Control Center for this inspection.
+Check your creation with describe and select:
 ```
 describe payments;
 ```
-Create the other streams
+Create the other streams:
 ```
 create stream aml_status(PAYMENT_ID INTEGER, BANK VARCHAR, STATUS VARCHAR) with(kafka_topic='AML_Status', value_format='json');
-
+```
+```
 create stream funds_status (PAYMENT_ID INTEGER, REASON_CODE VARCHAR, STATUS VARCHAR) with(kafka_topic='Funds_Status', value_format='json');
-
+```
+Verify the created streams with the following command:
+```
 list streams;
-
+```
+Create table:
+```
 create table customers (
           ID INTEGER PRIMARY KEY, 
           FIRST_NAME VARCHAR, 
@@ -41,11 +66,12 @@ create table customers (
           GENDER VARCHAR, 
           STATUS360 VARCHAR) 
           WITH(kafka_topic='CUSTOMERS_FLAT', value_format='JSON');
-
+```
+```
 list tables;        
 ```
 ## 3. Load Data to Streams and Table
-In the ksqlDB Editor add some data to your streams.
+In the ksqlDB Editor use ```INSERT INTO``` to add some mock data to your streams.
 
 Customer Data:
 ```
@@ -101,30 +127,40 @@ insert into funds_status(PAYMENT_ID,REASON_CODE,STATUS) values (19,'10','OK');
 ```
 ## 4. Verify the entered data
 
-Please set the following query properties 
-* 'auto.offset.reset' to 'earliest'
-* 'commit.interval.ms' to '1000'
-to query your streams and table
+Please set the following query properties to query your streams and table:
+* ```auto.offset.reset``` to 'Earliest'
+* ```commit.interval.ms``` to '1000'
+
 
 ![Needed Properties](img/payments_properties.png)
 
 ```bash
 select * from customers emit changes;
-
+```
+```bash
 select * from customers where id=1 emit changes;
-
+```
+```bash
 select * from payments emit changes;
-
+```
+```bash
 select * from aml_status emit changes;
-
+```
+```bash
 select * from funds_status emit changes;
 ```
-What is the pull query here? The answer is no one.
-What to do to make a pull query possible.
+
+Create a table that allows both push and pull queries:
 ```bash
 CREATE TABLE QUERYABLE_CUSTOMERS AS SELECT * FROM CUSTOMERS;
+```
+- Push query:
+```bash
 select * from QUERYABLE_CUSTOMERS emit changes;
-# here is the pull query now
+```
+
+- Pull query:
+```bash
 select * from QUERYABLE_CUSTOMERS where id = 1;
 ```
 ## 5. Enrich Payments stream with Customers table
@@ -140,38 +176,35 @@ c.last_name,
 c.email,
 c.status360
 from payments p left join customers c on p.custid = c.id;
-
+```
+```
 describe ENRICHED_PAYMENTS;
-
+```
+```bash
 select * from enriched_payments emit changes;
 ```
 Now check in Confluent Cloud UI:
 * check in ksqlDB Cluster - the persistent queries. Take a look in the details (SINK: and SOURCE:) of the running queries.
-* check performance tab if everything running without problems
+* check performance tab if *Query Saturation* and *Disk Usage* graphs are displaying activity.
 * check in ksqlDB cluster the flow to follow the expansion easier. If it is not visible refresh the webpage in browser.
 
 ![Persistent Queries](img/payments_pq.png)
 
-Please also check the new tabs
-* Performance: Do check roll-over over CSU saturation (%) (i) sign
-* setting: See that we running only one endpoint, so one instance, no HA. And also which API key is running with ksqDB APP. How to do you know, which ACL this API key has?
-  * answer: `confluent api-key list |  grep KEY` is running for a cloud user `confluent kafka acl list | grep USER` and which role are aligned `confluent iam rbac role-binding list --principal User:u-xxxx`
-* CLI instruction: Try to connect the Confluent Cloud ksqlDB cluster via the ksql cli described in that tab.
-
-
 
 ## 6. Merge the status streams
 ```
-# We do a union all here
 CREATE STREAM payment_statuses AS SELECT payment_id, status, 'AML' as source_system FROM aml_status;
-
+```
+```
 INSERT INTO payment_statuses SELECT payment_id, status, 'FUNDS' as source_system FROM funds_status;
-
+```
+```
 describe payment_statuses;
-
+```
+```bash
 select * from payment_statuses emit changes;
 ```
-This is the standard way to merge streams into one. Please also check this sample from our [devloper page](https://developer.confluent.io/tutorials/merge-many-streams-into-one-stream/ksql.html)
+This is the standard way to merge streams into one. Please also check this sample from our [devloper page](https://developer.confluent.io/tutorials/merge-many-streams-into-one-stream/ksql.html).
 
 Combine payment and status events in 1 hour window. Why we need a timing window for stream-stream join? Please follow the documentation [here](https://docs.ksqldb.io/en/latest/developer-guide/joins/join-streams-and-tables/#join-capabilities) to answer this question.
 ```
@@ -186,15 +219,17 @@ CREATE STREAM payments_with_status AS SELECT
   ep.status360,
   ps.status,
   ps.source_system
-  FROM enriched_payments ep LEFT JOIN payment_statuses ps WITHIN 1 HOURS ON ep.payment_id = ps.payment_id ;
-
+  FROM enriched_payments ep LEFT JOIN payment_statuses ps WITHIN 1 HOURS GRACE PERIOD 15 MINUTES ON ep.payment_id = ps.payment_id ;
+```
+```
 describe payments_with_status;
-
+```
+```bash
 select * from payments_with_status emit changes;
 ```
 ## 7. Aggregate data to the final table
 
-Aggregate into consolidated records
+Aggregate into consolidated records:
 ```
 CREATE TABLE payments_final AS SELECT
   payment_id,
@@ -203,9 +238,11 @@ CREATE TABLE payments_final AS SELECT
   from payments_with_status
   where status is not null
   group by payment_id;
-
+```
+```
 describe PAYMENTS_FINAL ;
-
+```
+```bash
 select * from payments_final emit changes;
 ```
 
@@ -216,7 +253,7 @@ Pull queries, check value for a specific payment (snapshot lookup). Pull Query i
 select * from payments_final where payment_id=1;
 ```
 
-## 8. Query by REST Call
+## 8. Query by REST Call (Optional activity)
 Get the REST Endpoint from the Settings menu and execute query with your credentials copies from properties File
 
 ![ksqlDB App Settings](img/payments_settings.png)
@@ -239,10 +276,9 @@ curl -X "POST" "https://yourserver.europe-west1.gcp.confluent.cloud:443/query-st
      -H "Content-Type: application/vnd.ksql.v1+json; charset=utf-8" \
      -d $'{"sql": "select * from payments_final where payment_id=1;","streamsProperties": {}}' | jq
 ```
-END Lab 1 
+
 
 Final table with payment statuses
 ![Financial Services Final Result](img/payments_final_status.png)
 
-
-[go back to Agenda](https://github.com/ora0600/confluent-ksqldb-hands-on-workshop/blob/master/README.md#hands-on-agenda-and-labs)
+END of Payment Status Check Lab.
