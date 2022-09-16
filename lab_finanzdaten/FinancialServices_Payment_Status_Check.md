@@ -38,6 +38,10 @@ show topics;
 ```
 
 ## 2. Create Streams and Table
+
+Please set the following query property:
+* ```auto.offset.reset``` to 'Earliest'
+
 ```
 create stream payments(PAYMENT_ID INTEGER KEY, CUSTID INTEGER, ACCOUNTID INTEGER, AMOUNT INTEGER, BANK VARCHAR) with(kafka_topic='Payment_Instruction', value_format='json');
 ```
@@ -178,7 +182,7 @@ c.status360
 from payments p left join customers c on p.custid = c.id;
 ```
 ```
-describe ENRICHED_PAYMENTS;
+describe enriched_payments;
 ```
 ```bash
 select * from enriched_payments emit changes;
