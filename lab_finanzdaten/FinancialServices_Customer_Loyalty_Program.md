@@ -9,7 +9,7 @@ We are going to build data pipeline which should look like this:
 - From the left panel select "ksqlDB" to display all apps.
 - Select your ksqlDB cluster to display the ksqlDB Editor.
 
-![Start Screen](img_customer_loyalty_program/ksqlDB_start.png)
+![Start Screen](img_customer_loyalty_program/ksqlDB_Start.png)
 
 Check the properties set for the ksqlDB cluster:
 ```
