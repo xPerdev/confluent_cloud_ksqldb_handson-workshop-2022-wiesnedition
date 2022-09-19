@@ -49,7 +49,7 @@ CREATE STREAM users (
   VALUE_FORMAT = 'JSON'
 );
 ```
-Check your creation with describe and select.
+Check your creation with describe.
 ```
 describe users;
 ```
@@ -89,6 +89,8 @@ CREATE TABLE all_products AS
   FROM products
   GROUP BY product_id;
 ```
+This will create a table which you can use for pull queries. It will also appear in the 'Persistent queries' tab. 
+
 Enter following command to list all existing tables:
 ```
 list tables;
@@ -330,5 +332,7 @@ SELECT * FROM promotion_french_poodle;
 
 
 
-END Customer Loyalty Program Lab
+END Customer Loyalty Program Lab. 
+
+[Back](../README.md#Agenda) to Agenda.
 
