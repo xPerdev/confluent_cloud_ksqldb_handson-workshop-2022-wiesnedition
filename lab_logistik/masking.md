@@ -1,4 +1,4 @@
-# Retail and Logistic case: Maskink PII Data (steps for Confluent Cloud)
+# Retail and Logistic case: Masking PII Data (steps for Confluent Cloud)
 
 
 We are going to build data pipeline which should look like this:
