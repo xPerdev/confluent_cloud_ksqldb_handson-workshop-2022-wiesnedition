@@ -5,7 +5,7 @@ We are going to build data pipeline which should look like this:
 
 ## 1. First Steps
 - Login to Confluent Cloud.
-- Select environment "ksqldb-workshop" and then select your Cluster.
+- Select your environment and your Cluster.
 - From the left panel select "ksqlDB" to display all apps.
 - Select your ksqlDB cluster to display the ksqlDB Editor.
 

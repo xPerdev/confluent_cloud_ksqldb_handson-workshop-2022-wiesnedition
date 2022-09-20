@@ -5,7 +5,7 @@
 
 ## 1. First Steps
 - Login to Confluent Cloud. 
-- Select environment "ksqldb-workshop" and then select your Cluster. 
+- Select your environment and your Cluster. 
 - From the left panel select "ksqlDB" to display all apps. 
 - Select your ksqlDB cluster to display the ksqlDB Editor. 
 
@@ -39,7 +39,7 @@ show topics;
 
 ## 2. Create Streams and Table
 
-Please set the following query property:
+Please set the following query property to set ksqlDB to query data from the beginning of the topic.
 * ```auto.offset.reset``` to 'Earliest'
 
 ```
@@ -132,8 +132,8 @@ insert into funds_status(PAYMENT_ID,REASON_CODE,STATUS) values (19,'10','OK');
 ## 4. Verify the entered data
 
 Please set the following query properties to query your streams and table:
-* ```auto.offset.reset``` to 'Earliest'
-* ```commit.interval.ms``` to '1000'
+* ```auto.offset.reset``` to 'Earliest' (to query data from the beginning of the topic)
+* ```commit.interval.ms``` to '1000' (the frequency of committing offsets)
 
 
 ![Needed Properties](img/payments_properties.png)
@@ -286,3 +286,5 @@ Final table with payment statuses
 ![Financial Services Final Result](img/payments_final_status.png)
 
 END of Payment Status Check Lab.
+
+[Back](../README.md#Agenda) to Agenda.
