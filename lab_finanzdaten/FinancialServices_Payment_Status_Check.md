@@ -138,6 +138,8 @@ Please set the following query properties to query your streams and table:
 
 ![Needed Properties](img/payments_properties.png)
 
+The following **SELECT** statements push a continuous stream of updates from the ksqlDB stream or table. The result is not persisted in a Kafka topic and is printed out only in the console.
+
 ```bash
 select * from customers emit changes;
 ```
@@ -158,16 +160,18 @@ Create a table that allows both push and pull queries:
 ```bash
 CREATE TABLE QUERYABLE_CUSTOMERS AS SELECT * FROM CUSTOMERS;
 ```
-- Push query:
+- Push query - a form of query issued by a client that subscribes to a result as it changes in real-time (are identified by the `EMIT CHANGES` clause):
 ```bash
 select * from QUERYABLE_CUSTOMERS emit changes;
 ```
 
-- Pull query:
+- Pull query - a form of query that returns the current state to the client, and then terminate, like a query against a traditional RDBMS:
 ```bash
 select * from QUERYABLE_CUSTOMERS where id = 1;
 ```
 ## 5. Enrich Payments stream with Customers table
+- creating a new materialized stream view with a corresponding new Kafka sink topic (`enriched_payments`) from `payments` and `customers` source topics
+- this will create a stream which you can use for pull queries. It will also appear in the 'Persistent queries' tab.
 ```
 create stream enriched_payments as select
 p.payment_id as payment_id,
