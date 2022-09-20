@@ -3,6 +3,10 @@
 
 ## Agenda
 
+### Environment Setup
+
+- [Confluent Cloud environment setup](environment_setup/envirnment_setup_confluent_cloud.md)
+
 ### Financial Services Use Cases
 
 - [Payment Status Check](lab_finanzdaten/FinancialServices_Payment_Status_Check.md)
