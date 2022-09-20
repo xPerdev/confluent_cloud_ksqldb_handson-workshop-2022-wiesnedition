@@ -37,7 +37,7 @@ show topics;
 ```
 
 ## 3. Create Streams and Table
-Please set the following query property:
+Please set the following query property to set ksqlDB to query data from the beginning of the topic.
 * ```auto.offset.reset``` to 'Earliest'
 
 ```
@@ -78,7 +78,8 @@ Enter following command to list all existing streams:
 list streams;
 ```
 Create table:
-
+- creating a new materialized table view with a corresponding new Kafka sink topic (`all_products`) from `products` source topic
+- the newly created topic can be used in further queries
 ```
 -- Summarize products.
 CREATE TABLE all_products AS
@@ -160,10 +161,11 @@ INSERT INTO purchases ( user_id, product_id ) VALUES ( 'yeva', 'handbag' );
 ## 5. Verify the entered data
 
 Please set the following query properties to query your streams and table:
-* ```auto.offset.reset``` to 'Earliest'
-* ```commit.interval.ms``` to '1000'
+* ```auto.offset.reset``` to 'Earliest' (to query data from the beginning of the topic)
 
 ![Needed Properties](img_customer_loyalty_program/command_properties.png)
+
+The following **SELECT** statements push a continuous stream of updates from the ksqlDB stream or table. The result is not persisted in a Kafka topic and is printed out only in the console.
 
 ```bash
 select * from users emit changes;
@@ -185,17 +187,18 @@ Create a table that allows both push and pull queries:
 ```bash
 CREATE TABLE queryable_products AS SELECT * FROM all_products;
 ```
-- Push query:
+- Push query - a form of query issued by a client that subscribes to a result as it changes in real-time (are identified by the `EMIT CHANGES` clause):
 ```bash
 select * from queryable_products emit changes;
 ```
-- Pull query:
+- Pull query - a form of query that returns the current state to the client, and then terminate, like a query against a traditional RDBMS:
 ```bash
 select * from queryable_products where product_id = 'tea';
 ```
 
 
 ## 6. Enrich Purchases stream with All Products table
+- creating a new materialized stream view with a corresponding new Kafka sink topic (`enriched_purchases`) from `purchases` and `all_products` source topics
 ```
 CREATE STREAM enriched_purchases AS
   SELECT
@@ -217,6 +220,8 @@ Now check in Confluent Cloud UI:
 * check performance tab if *Query Saturation* and *Disk Usage* graphs are displaying activity.
 * check in ksqlDB cluster the flow tab to follow the expansion easier. If it is not visible refresh the webpage in browser.
 
+**Persistent queries** are server-side queries that run indefinitely processing rows of events. You issue persistent queries by deriving new streams and new tables from existing streams or tables.
+
 ![Persistent Queries](img_customer_loyalty_program/products_pq.png)
 
 If you want to know more about joining streams and tables check out the [ksqlDB Documentation](https://docs.ksqldb.io/en/latest/developer-guide/joins/join-streams-and-tables/) for more information.
@@ -224,6 +229,7 @@ If you want to know more about joining streams and tables check out the [ksqlDB 
 ## 6. Create table for Customer Reward Levels
 
 Create table that groups the customers by how much they spend from the enriched_purchases stream.
+- creating a new materialized table view with a corresponding new Kafka sink topic (`sales_totals`) from `enriched_purchases` source topic
 ```
 CREATE TABLE sales_totals AS
   SELECT
@@ -257,6 +263,7 @@ SELECT * FROM sales_totals;
 ## 7. Create table for Coffee Reward System
 
 Customers need to buy five coffees to get a free one.
+- creating a new materialized table view with a corresponding new Kafka sink topic (`caffeine_index`) from `purchases` source topic
 ```
 CREATE TABLE caffeine_index AS
   SELECT
