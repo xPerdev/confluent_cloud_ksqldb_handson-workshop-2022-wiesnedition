@@ -22,19 +22,19 @@ Please set the following query property to set ksqlDB to query data from the beg
 Create the stream "orders_stream" and a new topic called "orders".
 ```
 CREATE STREAM orders_stream (
-			orderid VARCHAR key,
-			order_ts VARCHAR,
-			shop VARCHAR,
-			product VARCHAR,
-			order_placed VARCHAR,
-			total_amount DOUBLE,
-			customer_name VARCHAR)
-		with (KAFKA_TOPIC='orders',
-		      VALUE_FORMAT='JSON',
-              KEY_FORMAT='KAFKA', 
-              PARTITIONS=1,
-		      TIMESTAMP='order_ts',
-		      TIMESTAMP_FORMAT='yyyy-MM-dd''T''HH:mm:ssX');
+  orderid VARCHAR key,
+  order_ts VARCHAR,
+  shop VARCHAR,
+  product VARCHAR,
+  order_placed VARCHAR,
+  total_amount DOUBLE,
+  customer_name VARCHAR)
+  with (KAFKA_TOPIC='orders',
+    VALUE_FORMAT='JSON',
+    KEY_FORMAT='KAFKA', 
+    PARTITIONS=1,
+    TIMESTAMP='order_ts',
+    TIMESTAMP_FORMAT='yyyy-MM-dd''T''HH:mm:ssX');
 ```
 
 Check your creation with describe:
@@ -60,17 +60,17 @@ select * from orders_stream emit changes;
 Create a new stream called "shipments_stream" and a new topic "shipments":
 ```
 CREATE STREAM shipments_stream (
-				shipmentid varchar key,
-				shipment_id VARCHAR,
-				shipment_ts VARCHAR,
-				order_id VARCHAR,
-				delivery VARCHAR)
-			with (KAFKA_TOPIC='shipments',
-           KEY_FORMAT='KAFKA', 
-           PARTITIONS=1,
-			     VALUE_FORMAT='JSON',
-			     TIMESTAMP='shipment_ts',
-			     TIMESTAMP_FORMAT='yyyy-MM-dd''T''HH:mm:ssX');
+  shipmentid varchar key,
+  shipment_id VARCHAR,
+  shipment_ts VARCHAR,
+  order_id VARCHAR,
+  delivery VARCHAR)
+  with (KAFKA_TOPIC='shipments',
+    KEY_FORMAT='KAFKA', 
+    PARTITIONS=1,
+    VALUE_FORMAT='JSON',
+    TIMESTAMP='shipment_ts',
+    TIMESTAMP_FORMAT='yyyy-MM-dd''T''HH:mm:ssX');
 ```
 
 Create some demo data for the stream "shipments_stream":
@@ -85,22 +85,22 @@ insert into shipments_stream (shipmentid, shipment_id, shipment_ts, order_id, de
 Create a new stream called "shipped_orders" that joins data from the "orders_stream" and "shipments_stream":
 ```
 CREATE STREAM shipped_orders AS
-	SELECT
-		o.orderid AS order_id,
-		TIMESTAMPTOSTRING(o.rowtime, 'yyyy-MM-dd HH:mm:ss') AS order_ts,
-		o.total_amount,
-		o.customer_name,
-		s.shipment_id,
-		TIMESTAMPTOSTRING(s.rowtime, 'yyyy-MM-dd HH:mm:ss') AS shipment_ts,
-		s.delivery, 
-		(s.rowtime - o.rowtime) / 1000 / 60 AS ship_time
-	FROM
-		orders_stream o 
+  SELECT
+    o.orderid AS order_id,
+    TIMESTAMPTOSTRING(o.rowtime, 'yyyy-MM-dd HH:mm:ss') AS order_ts,
+    o.total_amount,
+    o.customer_name,
+    s.shipment_id,
+    TIMESTAMPTOSTRING(s.rowtime, 'yyyy-MM-dd HH:mm:ss') AS shipment_ts,
+    s.delivery, 
+    (s.rowtime - o.rowtime) / 1000 / 60 AS ship_time
+  FROM
+    orders_stream o 
   INNER JOIN shipments_stream s
-	WITHIN
-		30 DAYS GRACE PERIOD 45 DAYS
-	ON
-		o.orderid = s.order_id;
+  WITHIN
+    30 DAYS GRACE PERIOD 45 DAYS
+  ON
+    o.orderid = s.order_id;
 ```
 
 Knowledge questions:
@@ -116,13 +116,13 @@ select * from shipped_orders emit changes;
 Create a new stream called "shipment_statuses_stream" and a new topic "shipment_status":
 ```
 CREATE STREAM shipment_statuses_stream (
-			shipment_id VARCHAR,
-			status VARCHAR,
-			warehouse VARCHAR)
-		WITH (KAFKA_TOPIC='shipment_status',
-          KEY_FORMAT='KAFKA', 
-          PARTITIONS=1, 
-		      VALUE_FORMAT='JSON');
+  shipment_id VARCHAR,
+  status VARCHAR,
+  warehouse VARCHAR)
+  WITH (KAFKA_TOPIC='shipment_status',
+    KEY_FORMAT='KAFKA', 
+    PARTITIONS=1, 
+    VALUE_FORMAT='JSON');
 ```
 
 Create some demo data for the stream "shipment_statuses_stream":
@@ -148,18 +148,18 @@ select * from shipment_statuses_stream emit changes;
 Create a table with aggregation functions over the stream "shipment_statuses_stream" that supports **symmetric updates**
 ```
 CREATE TABLE shipment_statuses_table AS
-	SELECT
-		shipment_id,
-		histogram(status) as status_counts,
-		collect_list('{ "status" : "' + status + '"}') as status_list,
-		histogram(warehouse) as warehouse_counts,
-		collect_list('{ "warehouse" : "' + warehouse + '"}') as warehouse_list
-	FROM
-		shipment_statuses_stream
-	WHERE
-		status is not null
-	GROUP BY
-		shipment_id;
+  SELECT
+    shipment_id,
+    histogram(status) as status_counts,
+    collect_list('{ "status" : "' + status + '"}') as status_list,
+    histogram(warehouse) as warehouse_counts,
+    collect_list('{ "warehouse" : "' + warehouse + '"}') as warehouse_list
+  FROM
+    shipment_statuses_stream
+  WHERE
+    status is not null
+  GROUP BY
+    shipment_id;
 ```
 
 Have a look into the table:
