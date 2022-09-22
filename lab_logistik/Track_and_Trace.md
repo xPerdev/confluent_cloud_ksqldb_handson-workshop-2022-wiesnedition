@@ -177,7 +177,9 @@ Troubleshoot:
 ```
 list tables; 
 list streams;
-describe streams;      
+describe streams;
+drop table shipment_statuses_table;
+drop stream shipment_statuses_stream;      
 ```
 
 END of Track & Trace Lab.
