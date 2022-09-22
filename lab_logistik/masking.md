@@ -153,7 +153,6 @@ Limit Reached
 Query terminated
 ```
 
-
 Now check in Confluent Cloud UI:
 * check in ksqlDB Cluster - the persistent queries. Take a look in the details (SINK: and SOURCE:) of the running queries.
 * check performance tab if *Query Saturation* and *Disk Usage* graphs are displaying activity.
@@ -164,6 +163,5 @@ Now check in Confluent Cloud UI:
 ![Persistent Queries](img/Mask4.png)
 
 END of Masking Lab.
-
 
 [Back](../README.md#Agenda) to Agenda.
