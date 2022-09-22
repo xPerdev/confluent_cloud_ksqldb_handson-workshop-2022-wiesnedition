@@ -168,6 +168,9 @@ select * from shipment_statuses_table emit changes;
 select * from shipment_statuses_table where SHIPMENT_ID='ship-ch83360';
 ```
 
+You can toggle to the table view by clicking on the icon:
+![Table view](img_track_trace/track_trace_table_view.png)
+
 Knowledge question:
 - Is there a topic for this table? 
 - What is the name of the topic?
