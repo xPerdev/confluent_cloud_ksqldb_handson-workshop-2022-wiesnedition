@@ -1,6 +1,5 @@
 # Confluent Cloud ksqlDB Hands-On Workshop 2022 Wiesn Edition
 
-
 ## Agenda
 
 ### Environment Setup
@@ -16,3 +15,9 @@
 
 - [Masking PII Data](lab_logistik/masking.md)
 - [Track & Trace](lab_logistik/Track_and_Trace.md)
+
+### Internet of Things (IoT)
+
+- [Temperature Alerting System](lab_iot/Temperature_Alerting_System.md)
+
+- [Pump Stream Processing](lab_iot/Pump_Stream_Processing.md)
