@@ -1,7 +1,8 @@
 # IoT Use Case: Drilling Machine Stream Processing (Confluent Cloud)
 
 We want to build a dataflow based on events of oil drilling equipment.\
-Events are emitted by a DEMS (Drilling Equipment Management System) which collects information on the status of the drillhead during drilling.\ At certain points during this process, a collection of this information is emitted as a complex event for subsequent analysis (not in scope of this exercise)\
+Events are emitted by a DEMS (Drilling Equipment Management System) which collects information on the status of the drillhead during drilling.\ 
+At certain points during this process, a collection of this information is emitted as a complex event for subsequent analysis (not in scope of this exercise).\
 
 Our data pipeline should look like this:
 ![ Temperature Alerting System Flow](img_pump_stream_processing/datapipeline.png)
