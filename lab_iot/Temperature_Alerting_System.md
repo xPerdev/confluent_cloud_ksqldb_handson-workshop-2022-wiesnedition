@@ -7,19 +7,17 @@ consistently drops below 45 degrees Fahrenheit for a period of 10 minutes.
 Our data pipeline should look like this:
 ![ Temperature Alerting System Flow](img_temperature_alerting_system/datapipeline.png)
 
-## 1 Confluent cloud ksqldb setup
+## 1 Confluent Cloud ksqldb setup to enable use run our ksqlDB script.
 
 - Login to Confluent Cloud.
 - Select or create an environment.
-- Create new KsqlDB cluster or select an existing from within your environment.
-- Select "KsqlDB" from your left panel to display all KsqlDb Clusters.
-- Select a KsqlDB cluster to display the ksqlDB Editor.
+- Create new ksqlDB cluster or select an existing from within your environment.
+- Select "ksqlDB" from your left panel to display all ksqlDb clusters.
+- Select a ksqlDB cluster to display ksqlDB editor.
 
 ![Start Screen](img_temperature_alerting_system/ksqlDB_Start.png)
 
-## 2. Create Topic (TEMPERATURE_READINGS)
-
-## 3. Create and populate streams.
+## 2. Create stream (TEMPERATURE_READINGS), this equally auto creates topic (TEMPERATURE_READINGS)
 
 ```
 CREATE STREAM TEMPERATURE_READINGS (ID VARCHAR KEY, TIMESTAMP VARCHAR, READING BIGINT)
@@ -30,13 +28,9 @@ CREATE STREAM TEMPERATURE_READINGS (ID VARCHAR KEY, TIMESTAMP VARCHAR, READING B
           PARTITIONS = 1);
 ```
 
-Check your creation with describe.
+Check created stream and topic from stream and topic tabs within your cloud UI.
 
-```
-describe TEMPERATURE_READINGS;
-```
-
-Insert some data in created stream
+## 3. Insert sample data into create topic. Which would be accessed by our stream.
 
 ```
 INSERT INTO TEMPERATURE_READINGS (ID, TIMESTAMP, READING) VALUES ('1', '2022-09-23 02:15:30', 55);
@@ -47,15 +41,22 @@ INSERT INTO TEMPERATURE_READINGS (ID, TIMESTAMP, READING) VALUES ('1', '2022-09-
 INSERT INTO TEMPERATURE_READINGS (ID, TIMESTAMP, READING) VALUES ('1', '2022-09-23 02:40:30', 50);
 INSERT INTO TEMPERATURE_READINGS (ID, TIMESTAMP, READING) VALUES ('1', '2022-09-23 02:45:30', 55);
 INSERT INTO TEMPERATURE_READINGS (ID, TIMESTAMP, READING) VALUES ('1', '2022-09-23 02:50:30', 60);
+
 ```
 
-Please set the following query property:
+Your topic and stream entries should look like this:
 
-- `auto.offset.reset` to 'Earliest'
+![Topic Entries](img_temperature_alerting_system/topic_entries.png)
 
-SET 'auto.offset.reset' = 'earliest';
+![Stream Entries](img_temperature_alerting_system/stream_entries.png)
 
-## 4 Select data from created stream
+Please make sure your auto.offset.reset is set to Earliest as above.
+
+## 4 Query detect when temperatures drops below 45 °F for a period of 10 minutes.
+
+We need to create a query capable of detecting when the temperature drops below 45 °F for a period of 10 minutes.
+However, since our sensor emits readings every 5 minutes, we need to come up with a way to detect this even
+if the drop goes beyond the interval of 10 minutes. Hence why we are using hopping windows for this scenario.
 
 ```
 SELECT
@@ -72,27 +73,16 @@ SELECT
 
 ```
 
-This query should produce the following output
+Our query produces following output
 
-```
-+--------------------+--------------------+--------------------+--------------------+
-|ID                  |START_PERIOD        |END_PERIOD          |AVG_READING         |
-+--------------------+--------------------+--------------------+--------------------+
-|1                   |02:25:00            |02:35:00            |42                  |
-|1                   |02:30:00            |02:40:00            |40                  |
-|1                   |02:30:00            |02:40:00            |42                  |
-Limit Reached
-Query terminated
-
-```
+![Select results](img_temperature_alerting_system/select_results.png)
 
 Enter following command to list all existing streams:
 
-```
-list streams;
-```
+### 5.1 Create Table (TRIGGERED_ALERTS)
 
-## 5. Create Table (TRIGGERED_ALERTS)
+Note that the period where the average temperature fell below 45F was exactly from 02:25 until 02:40.
+This means that our alerting system is working properly. Now let’s create some continuous queries to implement this scenario.
 
 ```
 CREATE TABLE TRIGGERED_ALERTS AS
@@ -106,10 +96,20 @@ CREATE TABLE TRIGGERED_ALERTS AS
       WINDOW HOPPING (SIZE 10 MINUTES, ADVANCE BY 5 MINUTES)
     GROUP BY ID
     HAVING SUM(READING)/COUNT(READING) < 45;
+```
 
+### 5.2 Create stream (STREAM RAW_ALERTS)
+
+```
 CREATE STREAM RAW_ALERTS (ID VARCHAR, START_PERIOD VARCHAR, END_PERIOD VARCHAR, AVG_READING BIGINT)
     WITH (KAFKA_TOPIC = 'TRIGGERED_ALERTS',
           VALUE_FORMAT = 'JSON', PARTITIONS = 1);
+
+```
+
+### 5.3 Create STream (ALERTS)
+
+```
 
 CREATE STREAM ALERTS AS
     SELECT
@@ -120,15 +120,10 @@ CREATE STREAM ALERTS AS
     FROM RAW_ALERTS
     WHERE ID IS NOT NULL
     PARTITION BY ID;
-```
-
-Enter following command to list all existing tables:
 
 ```
-list tables;
-```
 
-## 4. Select alerts within time window.
+## 6. Select alerts within time window.
 
 ```
 
@@ -144,19 +139,6 @@ LIMIT 3;
 ```
 
 The output should look similar to:
-
-```
-
-+--------------------+--------------------+--------------------+--------------------+
-|ID                  |START_PERIOD        |END_PERIOD          |AVG_READING         |
-+--------------------+--------------------+--------------------+--------------------+
-|1                   |02:25:00            |02:35:00            |42                  |
-|1                   |02:30:00            |02:40:00            |40                  |
-|1                   |02:30:00            |02:40:00            |42                  |
-Limit Reached
-Query terminated
-
-```
 
 Check underlying Kafka topic
 

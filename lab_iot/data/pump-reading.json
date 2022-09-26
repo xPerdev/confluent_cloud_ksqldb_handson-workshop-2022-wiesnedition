@@ -1,0 +1,129 @@
+{
+  "MessageHeader": {
+    "MessageName": "well.esp.readings",
+    "UniqueID": null,
+    "Version": "1.0",
+    "TimeStamp": "2022-09-18T16:27:07.000+08:00",
+    "Source": null,
+    "Target": null,
+    "RequestID": null
+  },
+  "ProcessData": {
+    "nr": 1,
+    "result": "OK",
+    "reservoir_code": "FGHN",
+    "equipment_type": "ESP",
+    "pressure_unit": "PSI",
+    "temp_unit": "DEG F",
+    "current_unit": "AMPS DC",
+    "speed_unit": "Hz",
+    "date": "2022-09-18 16:27:07",
+    "wells": [
+      {
+        "well_name": "FGHN-21",
+        "equipment_type": "ESP",
+        "equipment_nr": "10968",
+        "equipment_installation_depth": 4596,
+        "sensor_readings": {
+          "bottomhole_pressure": [
+            920, 1206, 1150, 1257, 1357, 1029, 1247, 1254, 992, 1306
+          ],
+          "bottomhole_temp": [
+            265.0, 223.7, 207.5, 235.5, 241.8, 209.7, 261.7, 180.9, 201.7, 188.0
+          ],
+          "motor_current": [
+            5.48, 5.82, 7.92, 5.76, 5.67, 5.58, 5.52, 6.07, 5.33, 6.86
+          ],
+          "motor_speed": [31, 34, 39, 32, 45, 42, 36, 35, 37, 44],
+          "time_values": [
+            0.002, 0.144, 0.24, 0.348, 0.408, 0.528, 0.66, 0.732, 0.804, 0.948
+          ]
+        }
+      },
+      {
+        "well_name": "FGHN-22",
+        "equipment_type": "ESP",
+        "equipment_nr": "10971",
+        "equipment_installation_depth": 4366,
+        "sensor_readings": {
+          "bottomhole_pressure": [
+            1123, 828, 1287, 999, 1158, 845, 1125, 979, 1022, 1054
+          ],
+          "bottomhole_temp": [
+            241.3, 257.1, 251.6, 263.9, 217.8, 225.1, 239.4, 263.4, 262.0, 182.8
+          ],
+          "motor_current": [
+            6.33, 7.06, 5.13, 7.53, 7.67, 5.59, 6.19, 8.23, 5.28, 7.55
+          ],
+          "motor_speed": [33, 44, 45, 36, 38, 40, 47, 41, 35, 30],
+          "time_values": [
+            0.052, 0.155, 0.258, 0.36, 0.462, 0.563, 0.664, 0.765, 0.866, 0.968
+          ]
+        }
+      },
+      {
+        "well_name": "FGHN-23",
+        "equipment_type": "ESP",
+        "equipment_nr": "10972",
+        "equipment_installation_depth": 4687,
+        "sensor_readings": {
+          "bottomhole_pressure": [
+            815, 1074, 988, 1121, 1322, 831, 1185, 1172, 866, 1314
+          ],
+          "bottomhole_temp": [
+            222.4, 187.4, 264.3, 200.9, 253.8, 237.4, 185.0, 225.5, 194.4, 255.0
+          ],
+          "motor_current": [
+            6.03, 6.17, 5.2, 6.67, 5.99, 7.29, 7.62, 5.84, 6.99, 6.27
+          ],
+          "motor_speed": [31, 41, 46, 42, 47, 45, 35, 40, 34, 38],
+          "time_values": [
+            0.081, 0.182, 0.283, 0.384, 0.486, 0.587, 0.688, 0.789, 0.89, 0.992
+          ]
+        }
+      },
+      {
+        "well_name": "FGHN-24",
+        "equipment_type": "ESP",
+        "equipment_nr": "10985",
+        "equipment_installation_depth": 4789,
+        "sensor_readings": {
+          "bottomhole_pressure": [
+            893, 1242, 1298, 1284, 1187, 1328, 825, 1114, 894, 986
+          ],
+          "bottomhole_temp": [
+            209.6, 212.9, 188.1, 232.0, 181.8, 236.9, 237.9, 211.8, 186.1, 217.3
+          ],
+          "motor_current": [
+            8.47, 7.74, 6.32, 5.85, 5.39, 6.95, 5.94, 5.35, 5.72, 5.93
+          ],
+          "motor_speed": [46, 34, 30, 40, 37, 41, 36, 44, 33, 39],
+          "time_values": [
+            0.098, 0.199, 0.2, 0.302, 0.403, 0.504, 0.605, 0.706, 0.808, 0.909
+          ]
+        }
+      },
+      {
+        "well_name": "FGHN-25",
+        "equipment_type": "ESP",
+        "equipment_nr": "10992",
+        "equipment_installation_depth": 4483,
+        "sensor_readings": {
+          "bottomhole_pressure": [
+            855, 1059, 1223, 1016, 1128, 1361, 1027, 934, 1270, 1113
+          ],
+          "bottomhole_temp": [
+            258.4, 252.6, 244.7, 248.4, 226.8, 202.3, 188.7, 183.1, 214.3, 240.2
+          ],
+          "motor_current": [
+            6.44, 8.01, 7.84, 7.36, 8.49, 5.1, 7.65, 5.56, 7.08, 7.99
+          ],
+          "motor_speed": [45, 37, 42, 32, 38, 33, 39, 44, 41, 34],
+          "time_values": [
+            0.004, 0.105, 0.206, 0.307, 0.41, 0.511, 0.613, 0.719, 0.82, 0.928
+          ]
+        }
+      }
+    ]
+  }
+}

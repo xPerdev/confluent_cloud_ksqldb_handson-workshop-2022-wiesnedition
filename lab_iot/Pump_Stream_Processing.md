@@ -17,7 +17,16 @@ Our data pipeline should look like this:
 
 ## 2. Excecute ksql scripts
 
-[1] Define stream for data of interest
+[1] Create stream (WELL_ESP_SENSOR_READINGS_RAW) as well as auto create topic (well.equipment.esp.sensor.readings-raw) with a partitionof 1
+
+Note: Auto creation of topics only work, if the AuthZ is setup.
+
+E.g. For our timeseries demo, we need to execute:
+
+```
+confluent kafka acl create --allow --service-account <sa-1jqw3z> --operation CREATE --topic 'well' --prefix
+confluent kafka acl create --allow --service-account <sa-1jqw3z> --operation READ --operation WRITE --topic 'well' --prefix
+```
 
 ```
 CREATE STREAM WELL_ESP_SENSOR_READINGS_RAW (
