@@ -1,6 +1,7 @@
-# Internet of Things Use Case: Machine Stream Processing (Confluent Cloud)
+# IoT Use Case: Drilling Machine Stream Processing (Confluent Cloud)
 
-We want to build ...
+We want to build a dataflow based on events of oil drilling equipment.\
+Events are emitted by a DEMS (Drilling Equipment Management System) which collects information on the status of the drillhead during drilling.\ At certain points during this process, a collection of this information is emitted as a complex event for subsequent analysis (not in scope of this exercise)\
 
 Our data pipeline should look like this:
 ![ Temperature Alerting System Flow](img_pump_stream_processing/datapipeline.png)
@@ -15,9 +16,9 @@ Our data pipeline should look like this:
 
 ![Start Screen](img_pump_stream_processing/ksqlDB_Start.png)
 
-## 1. Define Data of Interest
+## 1. Define data of interest
 
-Create a stream including the backing topic and specify the data of interest for your data flow
+Create a stream including the backing topic and specify the data of interest for our data flow.
 
 Note: \
 All following statements will auto-create topics. The auto-creation of topics only works, if the AuthZ for the security principal of the ksqlDB cluster is setup correctly. \
@@ -28,6 +29,8 @@ If you created your cluster with 'Granular Access' you might need to execute sta
 confluent kafka acl create --allow --service-account <YOUR_SERVICE_ACCOUNT_RESOURCE_ID> --operation CREATE --topic 'well' --prefix
 confluent kafka acl create --allow --service-account <YOUR_SERVICE_ACCOUNT_RESOURCE_ID> --operation READ --operation WRITE --topic 'well' --prefix
 ```
+
+Now let's create the first stream
 
 ```
 CREATE STREAM WELL_ESP_SENSOR_READINGS_RAW (
@@ -41,7 +44,7 @@ CREATE STREAM WELL_ESP_SENSOR_READINGS_RAW (
 
 ## 2 Introduce a unique ID
 Introduce an artifical unique ID for the given event.\
-This can be used at a later stage in a downstream system to correlate subsequent individual events that will originate in this event.
+This can be used at a later stage in a downstream system to correlate subsequent individual events that  originate in this initial given event.
 ```
 CREATE OR REPLACE STREAM WELL_ESP_SENSOR_READINGS_KEYED WITH (KAFKA_TOPIC='well.equipment.esp.sensor.readings-keyed', VALUE_FORMAT='JSON', KEY_FORMAT='KAFKA', PARTITIONS='2' ) as \
 select UUID() as PROCESS_EVENT_UID, * \
