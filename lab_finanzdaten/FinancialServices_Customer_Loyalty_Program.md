@@ -3,6 +3,8 @@
 We are going to build data pipeline which should look like this:
 ![Financial Services Use cases as flow](img_customer_loyalty_program/datapipeline.png)
 
+Inspired by https://developer.confluent.io/tutorials/loyalty-rewards/confluent.html
+
 ## 1. First Steps
 - Login to Confluent Cloud.
 - Select your environment and your Cluster.
