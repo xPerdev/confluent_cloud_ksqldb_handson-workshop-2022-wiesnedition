@@ -5,10 +5,6 @@ We want to build ...
 Our data pipeline should look like this:
 ![ Temperature Alerting System Flow](img_pump_stream_processing/datapipeline.png)
 
-Sample Test Data
-
-![Sample Test Data](data/pump_reading.json)
-
 ## 0 Setup : Confluent Cloud, Kafka and ksqlDB cluster.
 
 - Login to Confluent Cloud.
