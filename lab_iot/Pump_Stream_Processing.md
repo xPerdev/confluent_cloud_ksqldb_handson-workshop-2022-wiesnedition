@@ -5,7 +5,11 @@ We want to build ...
 Our data pipeline should look like this:
 ![ Temperature Alerting System Flow](img_pump_stream_processing/datapipeline.png)
 
-## 0. Setup Confluent Cloud KSQLDB Server
+Sample Test Data
+
+![Sample Test Data](data/pump_reading.json)
+
+## 0 Setup : Confluent Cloud, Kafka and ksqlDB cluster.
 
 - Login to Confluent Cloud.
 - Select environment "ksqldb-workshop"
@@ -17,14 +21,14 @@ Our data pipeline should look like this:
 
 ## 1. Create stream (WELL_ESP_SENSOR_READINGS_RAW)
 
-Create stream (WELL_ESP_SENSOR_READINGS_RAW) as well as auto create topic (well.equipment.esp.sensor.readings-raw) with a partitionof 1
+Create stream (WELL_ESP_SENSOR_READINGS_RAW) as well as auto create topic (well.equipment.esp.sensor.readings-raw) with a partition of 1
 
 Note: Auto creation of topics only work, if the AuthZ is setup.
 
 E.g. For our timeseries demo, we need to execute:
 
 ```
-confluent kafka acl create --allow --service-account <sa-1jqw3z> --operation CREATE --topic 'well' --prefix
+confluent kafka acl create --allow --service-account <your_service_account_resource_id> --operation CREATE --topic 'well' --prefix
 confluent kafka acl create --allow --service-account <sa-1jqw3z> --operation READ --operation WRITE --topic 'well' --prefix
 ```
 
@@ -38,7 +42,7 @@ CREATE STREAM WELL_ESP_SENSOR_READINGS_RAW (
 
 ```
 
-## 2.1 Create stream (WELL_ESP_SENSOR_READINGS_KEYED) Create unique ID
+## 2 Create stream (WELL_ESP_SENSOR_READINGS_KEYED)
 
 ```
 CREATE OR REPLACE STREAM WELL_ESP_SENSOR_READINGS_KEYED WITH (KAFKA_TOPIC='well.equipment.esp.sensor.readings-keyed', VALUE_FORMAT='JSON', KEY_FORMAT='KAFKA', PARTITIONS='2' ) as \
@@ -98,16 +102,18 @@ from WELL_ESP_SENSOR_READINGS_SENSOR_LEVEL emit changes;
 
 ```
 
-## 7 Insert sample data for test into topic
+We can insert sample data into our created topic from within the confluent ui as follows:
 
-The final topic 'well.equipment.esp.sensor.readings-measurement-timestamp' holds data like
+![Insert Sample Data from UI ](img_pump_stream_processing/test_data_ui.png)
+
+The final topic 'well.equipment.esp.sensor.readings-measurement-timestamp' would then hold data like:
+
+![Final Topic Content ](img_pump_stream_processing/final_topic_content.png)
 
 ```
 { "PROCESS_EVENT_UID": "c1b11a22-0ef4-4577-869d-043203a9205e", "PROCESS_DATE": "2022-09-18 16:27:07", "PROCESS_TIMESTAMP": 1619533002000, in I'll"WELL_NAME": "FGHN-21", "EQUIPMENT_ID": "10968", "MEASUREMENT_ID":"10968-1", "MEASUREMENT_BOTTOMHOLE_PRESSURE": 920, "MEASUREMENT_BOTTOMHOLE_TEMP": 265.0, "MEASUREMENT_MOTOR_CURRENT": 5.48, "MEASUREMENT_MOTOR_SPEED": 31, "MEASUREMENT_TIMESTAMP": 1619533002002, "MEASUREMENT_TIMESTAMP_UTC": "2022-09-18 16:27:07:002", "MEASUREMENT_INDEX": 1}
 
 ```
-
- 
 
 END Pump Stream Processing Lab.
 
