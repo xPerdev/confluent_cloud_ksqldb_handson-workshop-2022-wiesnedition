@@ -5,7 +5,7 @@ We want to build ...
 Our data pipeline should look like this:
 ![ Temperature Alerting System Flow](img_pump_stream_processing/datapipeline.png)
 
-## 1. Setup Confluent Cloud KSQLDB Server
+## 0. Setup Confluent Cloud KSQLDB Server
 
 - Login to Confluent Cloud.
 - Select environment "ksqldb-workshop"
@@ -15,9 +15,9 @@ Our data pipeline should look like this:
 
 ![Start Screen](img_pump_stream_processing/ksqlDB_Start.png)
 
-## 2. Excecute ksql scripts
+## 1. Create stream (WELL_ESP_SENSOR_READINGS_RAW)
 
-[1] Create stream (WELL_ESP_SENSOR_READINGS_RAW) as well as auto create topic (well.equipment.esp.sensor.readings-raw) with a partitionof 1
+Create stream (WELL_ESP_SENSOR_READINGS_RAW) as well as auto create topic (well.equipment.esp.sensor.readings-raw) with a partitionof 1
 
 Note: Auto creation of topics only work, if the AuthZ is setup.
 
@@ -38,7 +38,7 @@ CREATE STREAM WELL_ESP_SENSOR_READINGS_RAW (
 
 ```
 
-[1a] Create unique ID
+## 2.1 Create stream (WELL_ESP_SENSOR_READINGS_KEYED) Create unique ID
 
 ```
 CREATE OR REPLACE STREAM WELL_ESP_SENSOR_READINGS_KEYED WITH (KAFKA_TOPIC='well.equipment.esp.sensor.readings-keyed', VALUE_FORMAT='JSON', KEY_FORMAT='KAFKA', PARTITIONS='2' ) as \
@@ -46,7 +46,7 @@ select UUID() as PROCESS_EVENT_UID, * \
 from WELL_ESP_SENSOR_READINGS_RAW emit changes;
 ```
 
-[2] Explode process steps
+## 3 Explode stream (WELL_ESP_SENSOR_READINGS_WELL_LEVEL)
 
 ```
 CREATE OR REPLACE STREAM WELL_ESP_SENSOR_READINGS_WELL_LEVEL WITH (KAFKA_TOPIC='well.equipment.esp.sensor.readings-per-well',VALUE_FORMAT='JSON', KEY_FORMAT='KAFKA', PARTITIONS='2' ) as \
@@ -54,7 +54,7 @@ select UUID() as PROCESS_EVENT_UID, `ProcessData`->`date` as PROCESS_DATE, EXPLO
 from WELL_ESP_SENSOR_READINGS_KEYED emit changes;
 ```
 
-[3] Simple transformations + Synthetic index
+## 4 Simple transformations + Synthetic index
 
 ```
 CREATE OR REPLACE STREAM WELL_ESP_SENSOR_READINGS_WELL_TRANSFORMED WITH (KAFKA_TOPIC='well.equipment.esp.sensor.readings-well-transformed',VALUE_FORMAT='JSON', KEY_FORMAT='KAFKA', PARTITIONS='2' ) as \
@@ -70,7 +70,7 @@ from WELL_ESP_SENSOR_READINGS_WELL_LEVEL emit changes;
 
 ```
 
-[4] Explode time series
+## 5 Explode time series
 
 ```
 CREATE OR REPLACE STREAM WELL_ESP_SENSOR_READINGS_SENSOR_LEVEL WITH (KAFKA_TOPIC='well.equipment.esp.sensor.readings-sensor-level',VALUE_FORMAT='JSON', KEY_FORMAT='KAFKA', PARTITIONS='2' ) as \
@@ -84,7 +84,7 @@ EXPLODE(SENSOR_READING_SERIE_INDEX) AS MEASUREMENT_INDEX \
 from WELL_ESP_SENSOR_READINGS_WELL_TRANSFORMED emit changes;
 ```
 
-[5] Create timeseries timestamp
+## 6 Create timeseries timestamp
 
 ```
 CREATE OR REPLACE STREAM WELL_ESP_SENSOR_READINGS_SENSOR_MEASUREMENT WITH (KAFKA_TOPIC='well.equipment.esp.sensor.readings-measurement-timestamp',VALUE_FORMAT='JSON', KEY_FORMAT='KAFKA', PARTITIONS='2' ) as \
@@ -98,12 +98,16 @@ from WELL_ESP_SENSOR_READINGS_SENSOR_LEVEL emit changes;
 
 ```
 
+## 7 Insert sample data for test into topic
+
 The final topic 'well.equipment.esp.sensor.readings-measurement-timestamp' holds data like
 
 ```
 { "PROCESS_EVENT_UID": "c1b11a22-0ef4-4577-869d-043203a9205e", "PROCESS_DATE": "2022-09-18 16:27:07", "PROCESS_TIMESTAMP": 1619533002000, in I'll"WELL_NAME": "FGHN-21", "EQUIPMENT_ID": "10968", "MEASUREMENT_ID":"10968-1", "MEASUREMENT_BOTTOMHOLE_PRESSURE": 920, "MEASUREMENT_BOTTOMHOLE_TEMP": 265.0, "MEASUREMENT_MOTOR_CURRENT": 5.48, "MEASUREMENT_MOTOR_SPEED": 31, "MEASUREMENT_TIMESTAMP": 1619533002002, "MEASUREMENT_TIMESTAMP_UTC": "2022-09-18 16:27:07:002", "MEASUREMENT_INDEX": 1}
 
 ```
+
+ 
 
 END Pump Stream Processing Lab.
 

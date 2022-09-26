@@ -7,7 +7,7 @@ consistently drops below 45 degrees Fahrenheit for a period of 10 minutes.
 Our data pipeline should look like this:
 ![ Temperature Alerting System Flow](img_temperature_alerting_system/datapipeline.png)
 
-## 1 Confluent Cloud ksqldb setup to enable use run our ksqlDB script.
+## 0 Confluent Cloud ksqldb setup to enable use run our ksqlDB script.
 
 - Login to Confluent Cloud.
 - Select or create an environment.
@@ -17,7 +17,16 @@ Our data pipeline should look like this:
 
 ![Start Screen](img_temperature_alerting_system/ksqlDB_Start.png)
 
-## 2. Create stream (TEMPERATURE_READINGS), this equally auto creates topic (TEMPERATURE_READINGS)
+## 1. Create stream (TEMPERATURE_READINGS), this equally auto creates topic (TEMPERATURE_READINGS
+
+Note: Auto creation of topics only work, if the AuthZ is setup.
+
+E.g. For our timeseries demo, we need to execute:
+
+```
+confluent kafka acl create --allow --service-account <sa-1jqw3z> --operation CREATE
+confluent kafka acl create --allow --service-account <sa-1jqw3z> --operation READ --operation WRITE
+```
 
 ```
 CREATE STREAM TEMPERATURE_READINGS (ID VARCHAR KEY, TIMESTAMP VARCHAR, READING BIGINT)
@@ -30,7 +39,7 @@ CREATE STREAM TEMPERATURE_READINGS (ID VARCHAR KEY, TIMESTAMP VARCHAR, READING B
 
 Check created stream and topic from stream and topic tabs within your cloud UI.
 
-## 3. Insert sample data into create topic. Which would be accessed by our stream.
+## 2. Insert sample data into create topic. Which would be accessed by our stream.
 
 ```
 INSERT INTO TEMPERATURE_READINGS (ID, TIMESTAMP, READING) VALUES ('1', '2022-09-23 02:15:30', 55);
@@ -52,7 +61,7 @@ Your topic and stream entries should look like this:
 
 Please make sure your auto.offset.reset is set to Earliest as above.
 
-## 4 Query detect when temperatures drops below 45 °F for a period of 10 minutes.
+## 3 Query detect when temperatures drops below 45 °F for a period of 10 minutes.
 
 We need to create a query capable of detecting when the temperature drops below 45 °F for a period of 10 minutes.
 However, since our sensor emits readings every 5 minutes, we need to come up with a way to detect this even
@@ -79,7 +88,7 @@ Our query produces following output
 
 Enter following command to list all existing streams:
 
-### 5.1 Create Table (TRIGGERED_ALERTS)
+### 4.1 Create Table (TRIGGERED_ALERTS)
 
 Note that the period where the average temperature fell below 45F was exactly from 02:25 until 02:40.
 This means that our alerting system is working properly. Now let’s create some continuous queries to implement this scenario.
@@ -96,9 +105,10 @@ CREATE TABLE TRIGGERED_ALERTS AS
       WINDOW HOPPING (SIZE 10 MINUTES, ADVANCE BY 5 MINUTES)
     GROUP BY ID
     HAVING SUM(READING)/COUNT(READING) < 45;
+
 ```
 
-### 5.2 Create stream (STREAM RAW_ALERTS)
+### 4.2 Create stream (STREAM RAW_ALERTS)
 
 ```
 CREATE STREAM RAW_ALERTS (ID VARCHAR, START_PERIOD VARCHAR, END_PERIOD VARCHAR, AVG_READING BIGINT)
@@ -107,7 +117,7 @@ CREATE STREAM RAW_ALERTS (ID VARCHAR, START_PERIOD VARCHAR, END_PERIOD VARCHAR, 
 
 ```
 
-### 5.3 Create STream (ALERTS)
+### 4.3 Create STream (ALERTS)
 
 ```
 
@@ -123,7 +133,7 @@ CREATE STREAM ALERTS AS
 
 ```
 
-## 6. Select alerts within time window.
+## 5. Select alerts within time window.
 
 ```
 
