@@ -6,7 +6,7 @@ The Confluent Cloud ksqlDB Hands-On Workshop labs and exercises are optimized fo
 
 > The results of this workshop should not be viewed as production ready, as they are totally focussed on learning by getting started with ksqlDB in Confluent Cloud.
 
-This tutorial assumes you have access to [Confluent Cloud](https://confluent.cloud). While Confuent Cloud is used for the lowest barrier to fullfill the basic infrastructure requirements the lessons learned in this workshop can be applied to other deployment models Confluent Platform, as well as with Apache Kafka and a stand-alone [ksqlDB engine](https://ksqldb.io).
+This tutorial assumes you have access to [Confluent Cloud](https://confluent.cloud). While Confuent Cloud is used for the lowest barrier to fullfill the basic infrastructure requirements the lessons learned in this workshop can be applied to other deployment models of Confluent Platform, as well as with Apache Kafka and a stand-alone [ksqlDB engine](https://ksqldb.io).
 
 ## Agenda
 
