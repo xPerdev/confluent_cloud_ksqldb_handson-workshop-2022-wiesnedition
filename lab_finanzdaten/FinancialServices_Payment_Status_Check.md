@@ -274,6 +274,14 @@ Get the REST Endpoint from the Settings menu and execute query with your credent
 
 ![ksqlDB App Settings](img/payments_settings.png)
 
+Api Key and Secret for ksqlDB cluster are needed!
+
+Please confluent command line tool to generate a new key
+```
+confluent ksql cluster list
+confluent api-key create --resource lksqlc-nvdo5z --description ksqlkeys
+```
+
 Test REST API access
 ```
 curl -u KEY:SECRET https://yourserver.gcp.confluent.cloud:443/info
