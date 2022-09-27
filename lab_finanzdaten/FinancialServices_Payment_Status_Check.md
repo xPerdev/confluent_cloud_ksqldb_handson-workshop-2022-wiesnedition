@@ -262,7 +262,15 @@ select * from payments_final where payment_id=1;
 ```
 
 ## 8. Query by REST Call (Optional activity)
-Get the REST Endpoint from the Settings menu and execute query with your credentials copies from properties File
+
+Create user credentials for use with the REST API:
+
+```
+confluent ksql cluster list
+confluent api-key create --resource <ksql-cluster-id> --description ksqlfinance
+```
+
+Get the REST Endpoint from the Settings menu and execute query with your credentials copies from the above command
 
 ![ksqlDB App Settings](img/payments_settings.png)
 
@@ -279,10 +287,10 @@ curl -X "POST" "https://yourserver.europe-west1.gcp.confluent.cloud:443/ksql" \
 ```
 Try Select query via REST API
 ```
-curl -X "POST" "https://yourserver.europe-west1.gcp.confluent.cloud:443/query-stream" \
+curl -X "POST" "https://yourserver.europe-west1.gcp.confluent.cloud:443/query" \
      -u KEY:SECRET \
      -H "Content-Type: application/vnd.ksql.v1+json; charset=utf-8" \
-     -d $'{"sql": "select * from payments_final where payment_id=1;","streamsProperties": {}}' | jq
+     -d $'{"ksql": "select * from payments_final where payment_id=1;","streamsProperties": {}}' | jq
 ```
 
 
