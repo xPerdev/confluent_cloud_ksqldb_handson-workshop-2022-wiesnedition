@@ -263,6 +263,8 @@ select * from payments_final where payment_id=1;
 
 ## 8. Query by REST Call (Optional activity)
 
+Api Key and Secret for ksqlDB cluster are needed!
+
 Create user credentials for use with the REST API:
 
 ```
@@ -274,13 +276,6 @@ Get the REST Endpoint from the Settings menu and execute query with your credent
 
 ![ksqlDB App Settings](img/payments_settings.png)
 
-Api Key and Secret for ksqlDB cluster are needed!
-
-Please confluent command line tool to generate a new key
-```
-confluent ksql cluster list
-confluent api-key create --resource lksqlc-nvdo5z --description ksqlkeys
-```
 
 Test REST API access
 ```
