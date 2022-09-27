@@ -30,3 +30,7 @@
 ![Cluster Configuration](img/ksql_cluster_overview.png)
 - Click **Launch cluster!**. The ksqlDB clusters page opens, and the new cluster appears in the list. The new cluster has a **Provisioning** status. It may take a few minutes to provision the ksqlDB cluster. When the ksqlDB cluster is ready, its **Status** changes from **Provisioning** to **Up**.
 ![Cluster Provisioning](img/provisioning_ksql_cluster.png)
+
+## Optional: Install Confluent CLI
+- Download the CLI from https://docs.confluent.io/confluent-cli/current/install.html and follow the steps described or
+- Execute `curl -sL --http1.1 https://cnfl.io/cli | sh -s -- latest` to download and install the latest version in the default directory.
