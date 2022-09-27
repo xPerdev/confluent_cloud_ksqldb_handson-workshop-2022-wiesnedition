@@ -212,7 +212,7 @@ describe payment_statuses;
 ```bash
 select * from payment_statuses emit changes;
 ```
-This is the standard way to merge streams into one. Please also check this sample from our [devloper page](https://developer.confluent.io/tutorials/merge-many-streams-into-one-stream/ksql.html).
+This is the standard way to merge streams into one. Please also check this sample from our [developer page](https://developer.confluent.io/tutorials/merge-many-streams-into-one-stream/ksql.html).
 
 Combine payment and status events in 1 hour window. Why we need a timing window for stream-stream join? Please follow the documentation [here](https://docs.ksqldb.io/en/latest/developer-guide/joins/join-streams-and-tables/#join-capabilities) to answer this question.
 ```
