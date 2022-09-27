@@ -5,7 +5,7 @@ Events are emitted by a DEMS (Drilling Equipment Management System) which collec
 At certain points during this process, a collection of this information is emitted as a complex event for subsequent analysis (not in scope of this exercise).
 
 Our final data pipeline should look like this:
-![ Temperature Alerting System Flow](img_pump_stream_processing/datapipeline.png)
+![ Temperature Alerting System Flow](img_pump_stream_processing/pipeline_pump.png)
 
 ## 0 Setup : Confluent Cloud, Kafka and ksqlDB cluster.
 
@@ -44,8 +44,10 @@ CREATE STREAM WELL_ESP_SENSOR_READINGS_RAW (
 ```
 
 ## 2 Introduce a unique ID
+
 Introduce an artifical unique ID for the given event.\
-This can be used at a later stage in a downstream system to correlate subsequent individual events that  originate in this initial given event.
+This can be used at a later stage in a downstream system to correlate subsequent individual events that originate in this initial given event.
+
 ```
 CREATE OR REPLACE STREAM WELL_ESP_SENSOR_READINGS_KEYED WITH (KAFKA_TOPIC='well.equipment.esp.sensor.readings-keyed', VALUE_FORMAT='JSON', KEY_FORMAT='KAFKA', PARTITIONS='2' ) as \
 select UUID() as PROCESS_EVENT_UID, * \
@@ -53,6 +55,7 @@ from WELL_ESP_SENSOR_READINGS_RAW emit changes;
 ```
 
 ## 3 Explode the list of drilling machines
+
 Each event holds information about a set of drilling equipment.\
 Create a new event for each drilling equipment.
 
@@ -63,8 +66,10 @@ from WELL_ESP_SENSOR_READINGS_KEYED emit changes;
 ```
 
 ## 4 Simple transformations + synthetic index
+
 Apply a few simple transformations (given datetime to a standardized timestamp, rename of attributes)\
 Also create a new integer array with the length of the time-series.
+
 ```
 CREATE OR REPLACE STREAM WELL_ESP_SENSOR_READINGS_WELL_TRANSFORMED WITH (KAFKA_TOPIC='well.equipment.esp.sensor.readings-well-transformed',VALUE_FORMAT='JSON', KEY_FORMAT='KAFKA', PARTITIONS='2' ) as \
 select PROCESS_EVENT_UID, PROCESS_DATE, STRINGTOTIMESTAMP(PROCESS_DATE,'yyyy-MM-dd HH:mm:ss') AS PROCESS_TIMESTAMP,
@@ -80,10 +85,12 @@ from WELL_ESP_SENSOR_READINGS_WELL_LEVEL emit changes;
 ```
 
 ## 5 Explode the time series
-Explode each array for 
+
+Explode each array for
 *the four measurement values
 *the delta time of each measurement
-*the previously generated synthetic index
+\*the previously generated synthetic index
+
 ```
 CREATE OR REPLACE STREAM WELL_ESP_SENSOR_READINGS_SENSOR_LEVEL WITH (KAFKA_TOPIC='well.equipment.esp.sensor.readings-sensor-level',VALUE_FORMAT='JSON', KEY_FORMAT='KAFKA', PARTITIONS='2' ) as \
 select PROCESS_EVENT_UID, PROCESS_DATE, PROCESS_TIMESTAMP, WELL_NAME, EQUIPMENT_ID, \
@@ -97,8 +104,10 @@ from WELL_ESP_SENSOR_READINGS_WELL_TRANSFORMED emit changes;
 ```
 
 ## 6 Create timestamp for each element in the timeseries
+
 Each individual measurement only knows about its delta wrt. the start.\
 It is benefitial for subsequent analysis, if each event carries its own absolute time information
+
 ```
 CREATE OR REPLACE STREAM WELL_ESP_SENSOR_READINGS_SENSOR_MEASUREMENT WITH (KAFKA_TOPIC='well.equipment.esp.sensor.readings-measurement-timestamp',VALUE_FORMAT='JSON', KEY_FORMAT='KAFKA', PARTITIONS='2' ) as \
 select PROCESS_EVENT_UID, PROCESS_DATE, PROCESS_TIMESTAMP, WELL_NAME, EQUIPMENT_ID, \
@@ -123,7 +132,9 @@ The final topic 'well.equipment.esp.sensor.readings-measurement-timestamp' would
 { "PROCESS_EVENT_UID": "c1b11a22-0ef4-4577-869d-043203a9205e", "PROCESS_DATE": "2022-09-18 16:27:07", "PROCESS_TIMESTAMP": 1619533002000, in I'll"WELL_NAME": "FGHN-21", "EQUIPMENT_ID": "10968", "MEASUREMENT_ID":"10968-1", "MEASUREMENT_BOTTOMHOLE_PRESSURE": 920, "MEASUREMENT_BOTTOMHOLE_TEMP": 265.0, "MEASUREMENT_MOTOR_CURRENT": 5.48, "MEASUREMENT_MOTOR_SPEED": 31, "MEASUREMENT_TIMESTAMP": 1619533002002, "MEASUREMENT_TIMESTAMP_UTC": "2022-09-18 16:27:07:002", "MEASUREMENT_INDEX": 1}
 
 ```
+
 ## Bonus
+
 We introduced a subtle flaw in our data flow logic.\
 Can you find it?\
 Which modification is required to improve the data flow?\

@@ -5,7 +5,7 @@ The program will monitors a stream of temperature readings and detects when the 
 consistently drops below a given value for a period of 10 minutes.
 
 Our data pipeline should look like this:
-![ Temperature Alerting System Flow](img_temperature_alerting_system/datapipeline.png)
+![ Temperature Alerting System Flow](img_temperature_alerting_system/pipeline_temp.png)
 
 ## 0 Setup : Confluent Cloud, Kafka and ksqlDB cluster.
 
